@@ -5,18 +5,20 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 #include <list>
 #include <unordered_map>
 #include <limits>
 #include <math.h>
+#include <string.h>
 #include <time.h>
 #include <cstdlib>
 
-#define INPUT_NAME "kmeans.input"
+#define INPUT_NAME "kmeans100mb.input"
 #define OUTPUT_NAME "kmeans.output"
 #define CENTROID_NAME "kmeans_centroids.data"
 #define LOCAL_CENTROID_PATH "/home/vicente/velox_test/kmeans_centroids.data"
-#define ITERATIONS 5
+#define ITERATIONS 1
 #define NUM_CLUSTERS 25
 
 using namespace std;
@@ -69,6 +71,10 @@ class Point {
     };
 
     void get_point_from_string(std::string str) {
+      //std::replace( str.begin(), str.end(), ',', ' ');
+      //char* end;
+      //x = strtod(str.c_str(), &end);
+      //y = strtod(str.c_str(), &end);
       sscanf(str.c_str(), "%lf,%lf", &x, &y);
     };
 
@@ -85,7 +91,16 @@ class Point {
     };
 
     std::string to_string() {
-      return (std::to_string(x) + "," + std::to_string(y));
+      //return (std::to_string(x) + "," + std::to_string())
+      char tmp [512];
+      string to_send;
+      to_send.reserve(512);
+
+      size_t total = snprintf(tmp, 512, "%lf,%lf", x, y);
+      to_send.append(tmp,total);
+
+
+      return std::move(to_send);
     };
 };
 
