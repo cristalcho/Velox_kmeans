@@ -14,12 +14,12 @@
 #include <time.h>
 #include <cstdlib>
 
-#define INPUT_NAME "kmeans100mb.input"
+#define INPUT_NAME "kmeans.input"
 #define OUTPUT_NAME "kmeans.output"
-#define CENTROID_NAME "kmeans_centroids.data"
-#define LOCAL_CENTROID_PATH "/home/vicente/velox_test/kmeans_centroids.data"
-#define ITERATIONS 1
-#define NUM_CLUSTERS 25
+#define CENTROID_NAME "kmeans_centroids_c.data"
+#define LOCAL_CENTROID_PATH "/home/deukyeon/velox-apps/data/kmeans_centroids_c.data"
+#define ITERATIONS 5
+#define NUM_CLUSTERS 7
 
 using namespace std;
 using namespace velox;
@@ -159,16 +159,18 @@ void myreducer(std::string& key, std::vector<std::string>& values, OutputCollect
     count++;
 
     value_string += p.to_string();
-    if(count < values.size()) value_string += " | ";
+    if(count < values.size()) value_string += " ";
   }
 
   Point centroid((sumX / count), (sumY / count));
   output.insert(centroid.to_string(), value_string);
 
+/*
   std::ofstream os;
   os.open(LOCAL_CENTROID_PATH, ios::app);
   os << centroid.to_string() << endl;
   os.close();
+  */
 }
 
 int main (int argc, char** argv) {
@@ -209,8 +211,24 @@ int main (int argc, char** argv) {
     output_name = "kmeans.output-" + to_string(i);
 
     A.map("mymapper");
-    std::remove(LOCAL_CENTROID_PATH);
+    //std::remove(LOCAL_CENTROID_PATH);
     A.reduce("myreducer", output_name);
+
+    // Make new centroids
+    std::ofstream os;
+    os.open(LOCAL_CENTROID_PATH, ios::out);
+
+    velox::file of = cloud.open(output_name);
+    std::string content = of.get();
+
+    std::istringstream iss(content);
+    std::string line;
+    while(getline(iss, line)) {
+      std::string c = line.substr(0, line.find(":"));
+      os << c << endl;
+    }
+
+    os.close();
   }
 
 
